@@ -2,38 +2,42 @@
     margin: 0;
     padding: 0;
     box-sizing: border-box;
+    background-color: #efeff2;
 }
 
 body {
     font: 13px Helvetica, Arial;
 }
 
-form {
+#messageBox {
     background: #000;
-    padding: 3px;
+    padding: 0.3%;
+    margin: 1%;
     position: fixed;
     bottom: 0;
-    width: 100%;
+    width: 90%;
 }
 
-form input {
+#messageBox input {
     border: 0;
-    padding: 10px;
-    width: 90%;
+    padding: 1%;
+    width: 89%;
     margin-right: .5%;
 }
 
-form button {
-    width: 9%;
-    background: rgb(130, 224, 255);
+#messageBox button {
+    width: 10%;
+    background: #000000;
+    color: #FFFFFF;
     border: none;
-    padding: 10px;
+    padding: 0.5%;
 }
 
 #messages {
     list-style-type: none;
     margin: 0;
-    padding: 0;
+    padding: 1%;
+    width: 100%;
 }
 
 #messages li {
@@ -41,5 +45,67 @@ form button {
 }
 
 #messages li:nth-child(odd) {
-    background: #eee;
+    background: #f2e2cd;
+}
+
+#identifier {
+    padding: 1%;
+    font-size: medium;
+    width: 66%;
+    display: inline-block;
+    float: left;
+
+}
+
+#chat-box{
+    /*position: relative;
+    display: inline;*/
+    width: 66%;
+    display:inline-block;
+    float: left;
+    margin-left: 1%;
+    /*
+    display: -webkit-flex;
+    -webkit-flex-direction: column-reverse;
+    display: flex;
+    flex-direction: column-reverse;*/
+    word-wrap: break-word;
+}
+
+#user-box {
+    width: 31%;
+    display:inline-block;
+    float: right;
+    margin-right: 1%;
+}
+
+.to-bottom-contents {
+    position: absolute;
+    bottom: 3%;
+}
+
+.style-box {
+    background-color: #dadae3;
+    border: #111111;
+    padding: 10px;
+    height: 90%;
+}
+
+#user-list {
+    list-style-type: none;
+    word-wrap: break-word;
+    width:100%
+}
+
+#user-list li {
+    display: block;
+    padding: 5px 10px;
+}
+
+#user-title {
+    display: inline-block;
+    float: right;
+    font-size: medium;
+    width: 33%;
+    padding: 1%;
 }
