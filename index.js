@@ -24,7 +24,7 @@ app.get('/', function(req, res){
 
 app.use(express.static(path.join(__dirname, 'public')));
 
-//TODO: bold user messages, allow changing usernames, allow changing colour of username, implement cookies, add scrollbar, align text to bottom
+//TODO: allow changing colour of username, implement cookies, add scrollbar, align text to bottom, make sure changed nick is unique
 io.on('connection', function(socket){
 
     // give connected user past messages
@@ -49,18 +49,57 @@ io.on('connection', function(socket){
             //calculate time message is sent
             let messageTime = calculateTime();
 
-            let message = messageTime + "  " + socket.username + ": " + msg;
+            // create message for others
+            let message = messageTime + "  <span class=nick-color>" + socket.username + ":</span> " + msg;
+            // create message for sender
+            let messagebold = messageTime + "  <b><span class=nick-color>" + socket.username + ":</span> " + msg+'</b>';
 
             chatHistory.push(message);
 
-            io.emit('chat message', message);
+            //send for sender
+            socket.emit('chat message', messagebold);
+            //send for others
+            socket.broadcast.emit('chat message', message);
         }
     });
 
+    socket.on('change name', function (msg) {
+        // get new nick from input
+        let nick = msg.substring(msg.indexOf("/nick")+6);
+
+        // replace old nick from userlist
+        currentUsers.splice(currentUsers.indexOf(socket.username), 1, nick);
+
+        // update new name
+        socket.username = nick;
+
+        // update identifier
+        socket.emit('update identifier', nick);
+
+        // update html list
+        io.emit('update nick', currentUsers);
+
+    });
+
+    socket.on('change color', function (msg) {
+        //get color from input
+        let rgbCol = msg.substring(msg.indexOf("/nickcolor")+11,msg.indexOf("/nickcolor")+18).trim();
+        console.log(rgbCol);
+        let isOk  = /(^[0-9A-F]{6}$)/i.test(rgbCol);
+        if(!isOk || rgbCol.length !== 6){
+            let error = "<span class = error-text>Please enter a valid RGB value in the format RRGGBB</span>";
+            socket.emit('chat message', error);
+        }
+
+        rgbCol = "#"+rgbCol;
+        socket.emit('update color', rgbCol);
+    });
 
     socket.on('disconnect', function () {
-        currentUsers.splice(currentUsers.indexOf(socket.username));
+        // update user list
+        currentUsers.splice(currentUsers.indexOf(socket.username), 1);
 
+        // update html
         io.emit('remove user', socket.username);
     });
 });
