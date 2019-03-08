@@ -50,7 +50,7 @@ body {
 }
 
 #messages li:nth-child(odd) {
-    background: #f2e2cd;
+    background: #a69eb0;
 }
 
 #identifier {
@@ -64,10 +64,8 @@ body {
 }
 
 #chat-box{
-    /*position: relative;
-    display: inline;*/
     width: 66%;
-    height: 80vh;
+    height: 81vh;
     overflow: auto;
     display:inline-block;
     float: left;
@@ -94,12 +92,11 @@ body {
 .style-box {
     background-color: #dadae3;
     border: #111111;
-    /* padding: 10px; */
     height: 90%;
 }
 
 #user-list {
-    height: 80vh;
+    height: 81vh;
     display: -webkit-flex;
     -webkit-flex-direction: column-reverse;
     display: flex;
@@ -111,8 +108,12 @@ body {
 
 #user-list li {
     display: block;
-    padding: 0 7% 5%;
+    padding: 2% 7% 2%;
     font-size: medium;
+}
+
+#user-list li:nth-child(odd) {
+    background: #a69eb0;
 }
 
 #user-title {
@@ -128,8 +129,4 @@ body {
 .error-text {
     font-style: italic;
     color: crimson;
-}
-
-.nick-color {
-    color: #008800;
 }

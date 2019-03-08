@@ -16,7 +16,12 @@ let lastNames = ["Axolotl", "Salamander", "Frog", "Turtle", "Buffalo", "Lizard",
 let currentUsers = [];
 
 let chatHistory = [];
+
 let username = "";
+
+let nickcolor = "#000";
+
+let duplicatedUsers = [];
 
 app.get('/', function(req, res){
     res.sendFile(__dirname + '/public/index.html');
@@ -24,9 +29,8 @@ app.get('/', function(req, res){
 
 app.use(express.static(path.join(__dirname, 'public')));
 
-//TODO: allow changing colour of username, implement cookies, add scrollbar, align text to bottom, make sure changed nick is unique
+//TODO: implement cookies
 io.on('connection', function(socket){
-
     // give connected user past messages
     socket.emit('get messages', chatHistory);
 
@@ -35,13 +39,31 @@ io.on('connection', function(socket){
 
     // set initial username
     socket.emit('set username', username);
-    socket.username = username;
 
-    // add username to list of users
-    currentUsers.push(username);
+    // update nick in case returning user
+    socket.on('set cookie nick', function (nick) {
+        // check if cookie has a username set
+        if(nick !== ""){
+            socket.username = nick;
+        } else {
+            socket.username = username;
+        }
 
-    // show updated list of users
-    io.emit('add user', currentUsers);
+        // only update user list if user is not already in the chat
+        if(!currentUsers.includes(socket.username)){
+            currentUsers.push(socket.username);
+        }
+        // add to duplicated list to check for multiple tabs
+        duplicatedUsers.push(socket.username);
+        // show user list to users
+        io.emit('show users', currentUsers);
+    });
+
+    socket.on('check color', function (color) {
+        if(color !== ""){
+            socket.nickcolor = color;
+        }
+    });
 
     socket.on('chat message', function(msg){
         //check if message is empty
@@ -50,9 +72,9 @@ io.on('connection', function(socket){
             let messageTime = calculateTime();
 
             // create message for others
-            let message = messageTime + "  <span class=nick-color>" + socket.username + ":</span> " + msg;
+            let message = messageTime + "  <span style=color:"+socket.nickcolor+">" + socket.username + ":</span> " + msg;
             // create message for sender
-            let messagebold = messageTime + "  <b><span class=nick-color>" + socket.username + ":</span> " + msg+'</b>';
+            let messagebold = messageTime + "  <b><span style=color:"+socket.nickcolor+">" + socket.username + ":</span> " + msg+'</b>';
 
             chatHistory.push(message);
 
@@ -67,24 +89,32 @@ io.on('connection', function(socket){
         // get new nick from input
         let nick = msg.substring(msg.indexOf("/nick")+6);
 
-        // replace old nick from userlist
-        currentUsers.splice(currentUsers.indexOf(socket.username), 1, nick);
+        if(nick.length > 20){
+            let error = "<span class = error-text>Please enter a name under 20 characters</span>";
+            socket.emit('chat message', error);
+        } else if(currentUsers.includes(nick)){
+            let error = "<span class = error-text>Please select a name that has not yet been taken</span>";
+            socket.emit('chat message', error);
+        } else{
+            // replace old nick from userlist
+            currentUsers.splice(currentUsers.indexOf(socket.username), 1, nick);
 
-        // update new name
-        socket.username = nick;
+            // update new name
+            socket.username = nick;
 
-        // update identifier
-        socket.emit('update identifier', nick);
+            // update identifier
+            socket.emit('update identifier', nick);
 
-        // update html list
-        io.emit('update nick', currentUsers);
+            // update html list
+            io.emit('update nick', currentUsers);
+
+        }
 
     });
 
     socket.on('change color', function (msg) {
         //get color from input
         let rgbCol = msg.substring(msg.indexOf("/nickcolor")+11,msg.indexOf("/nickcolor")+18).trim();
-        console.log(rgbCol);
         let isOk  = /(^[0-9A-F]{6}$)/i.test(rgbCol);
         if(!isOk || rgbCol.length !== 6){
             let error = "<span class = error-text>Please enter a valid RGB value in the format RRGGBB</span>";
@@ -92,15 +122,20 @@ io.on('connection', function(socket){
         }
 
         rgbCol = "#"+rgbCol;
-        socket.emit('update color', rgbCol);
+        socket.nickcolor = rgbCol;
+
+        socket.emit('set color cookie', rgbCol);
     });
 
     socket.on('disconnect', function () {
-        // update user list
-        currentUsers.splice(currentUsers.indexOf(socket.username), 1);
+        // check if tabs are still open
+        if(userCountPop(socket.username) <= 0){
+            // update user list
+            currentUsers.splice(currentUsers.indexOf(socket.username), 1);
 
-        // update html
-        io.emit('remove user', socket.username);
+            // update html
+            io.emit('remove user', socket.username);
+        }
     });
 });
 
@@ -141,4 +176,17 @@ function generateName(){
     } while(currentUsers.includes(name));
 
     return name;
+}
+
+// remove a user and show updated count of name in list
+function userCountPop(name){
+    let count = 0;
+    duplicatedUsers.splice(currentUsers.indexOf(name), 1);
+
+    duplicatedUsers.forEach(function(currentName){
+        if(currentName === name)
+            count++;
+    });
+
+    return count;
 }
