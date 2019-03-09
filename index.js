@@ -29,7 +29,6 @@ app.get('/', function(req, res){
 
 app.use(express.static(path.join(__dirname, 'public')));
 
-//TODO: implement cookies
 io.on('connection', function(socket){
     // give connected user past messages
     socket.emit('get messages', chatHistory);
@@ -59,12 +58,14 @@ io.on('connection', function(socket){
         io.emit('show users', currentUsers);
     });
 
+    // check if a cookie has set a color
     socket.on('check color', function (color) {
         if(color !== ""){
             socket.nickcolor = color;
         }
     });
 
+    // send a chat message
     socket.on('chat message', function(msg){
         //check if message is empty
         if(msg.trim() !== ""){
@@ -85,10 +86,12 @@ io.on('connection', function(socket){
         }
     });
 
+    // change a users nick to their preferred name
     socket.on('change name', function (msg) {
         // get new nick from input
         let nick = msg.substring(msg.indexOf("/nick")+6);
 
+        //check if nick is too long
         if(nick.length > 20){
             let error = "<span class = error-text>Please enter a name under 20 characters</span>";
             socket.emit('chat message', error);
@@ -112,18 +115,23 @@ io.on('connection', function(socket){
 
     });
 
+    // change the users nick color to their chosen color
     socket.on('change color', function (msg) {
         //get color from input
         let rgbCol = msg.substring(msg.indexOf("/nickcolor")+11,msg.indexOf("/nickcolor")+18).trim();
-        let isOk  = /(^[0-9A-F]{6}$)/i.test(rgbCol);
-        if(!isOk || rgbCol.length !== 6){
+
+        //check if color is a valid rgb value
+        let isRGB  = /(^[0-9A-F]{6}$)/i.test(rgbCol);
+        if(!isRGB || rgbCol.length !== 6){
             let error = "<span class = error-text>Please enter a valid RGB value in the format RRGGBB</span>";
             socket.emit('chat message', error);
         }
 
+        // assign the color to the socket
         rgbCol = "#"+rgbCol;
         socket.nickcolor = rgbCol;
 
+        // set color in cookie
         socket.emit('set color cookie', rgbCol);
     });
 
@@ -144,6 +152,8 @@ http.listen(3000, function(){
     console.log('listening on *:3000');
 });
 
+
+// find the current local time
 function calculateTime(){
     let time;
     const date = new Date();
@@ -164,6 +174,7 @@ function calculateTime(){
     return time;
 }
 
+// generate a random username
 function generateName(){
     let name;
 
@@ -181,8 +192,7 @@ function generateName(){
 // remove a user and show updated count of name in list
 function userCountPop(name){
     let count = 0;
-    duplicatedUsers.splice(currentUsers.indexOf(name), 1);
-
+    duplicatedUsers.splice(duplicatedUsers.indexOf(name), 1);
     duplicatedUsers.forEach(function(currentName){
         if(currentName === name)
             count++;
