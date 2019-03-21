@@ -1,0 +1,28 @@
+{
+  "name": "chat-application",
+  "version": "1.0.0",
+  "description": "A basic chat application developed for my Web-Based Systems course. To change your username use /nick <new nickname>. To change your username color use /nickcolor RRGGBB.",
+  "main": "index.js",
+  "dependencies": {
+    "express": "^4.15.2",
+    "socket.io": "^2.2.0"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "start": "node index",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/artrahim/Chat-Application.git"
+  },
+  "keywords": [
+    "chat"
+  ],
+  "author": "Artemiss Rahim",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/artrahim/Chat-Application/issues"
+  },
+  "homepage": "https://github.com/artrahim/Chat-Application#readme"
+}
